@@ -22,6 +22,8 @@ var brickHeight = 20;
 var brickPadding = 12;
 var brickOfSetTop = 30;
 var brickOfSetLeft = 100;
+var score = 0;
+var lives = 3;
 
 var briks = [];
 for (let i = 0; i < brickColums; i++) {
@@ -33,6 +35,7 @@ for (let i = 0; i < brickColums; i++) {
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousemove", mouseMoveHandler, false)
 
 function keyDownHandler(e) {
     if (e.keyCode == 37) {
@@ -54,10 +57,17 @@ function keyUpHandler(e) {
     }
 }
 
+function mouseMoveHandler (e){
+    var mouseRelativeX = e.clientX - c.offsetLeft;
+    if(mouseRelativeX > 0 && mouseRelativeX < c.width){
+        paddlex = mouseRelativeX - paddleW / 2;
+    }
+}
+
 function drawBall() {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = "#0066cc";
+    ctx.fillStyle = "#1324bdff";
     ctx.fill();
     ctx.closePath();
 }
@@ -99,17 +109,38 @@ function detectHits() {
                     y - radius < brick.y + brickHeight) {
                     dy = -dy;
                     brick.drawBrik = false;
+                    score++;;
+                    if (score == brickColums * brickRows) {
+                        alert("CONGRATS, YOU ARE THE CHANP")
+                    }
                 }
             }
         }
     }
 }
+
+function drawScore() {
+    ctx.font = "15px Arial";
+    ctx.fillText("Score: " + score, 10, 20);
+    ctx.fillStyle = "#1324bdff";
+}
+
+function drawlives() {
+    ctx.font = "15px Arial";
+    ctx.fillText("Lives: " + lives, c.width - 80, 20);
+    ctx.fillStyle = "#1324bdff";
+}
+
+
+
 function draw() {
     ctx.clearRect(0, 0, c.width, c.height);
     drawPaddle();
     drawBall();
     detectHits()
     drawBriks();
+    drawScore();
+    drawlives();
     if (x + dx > c.width || x + dx < radius) {
         dx = -dx;
     }
@@ -121,13 +152,20 @@ function draw() {
             if (x > paddlex && x < paddlex + paddleW) {
                 dy = -dy;
             } else {
-                alert("GAME OVER");
+                lives--;
+                if (lives < 1) {
+                    gameover();
+                    return;
+                } else {
+                    x = c.width / 2;
+                    y = c.height - radius;
+                    dx = 2;
+                    dy = -2;
+                    paddlex = c.width / 2;
+                }
             }
         }
     }
-
-
-
 
     if (leftMove && paddlex > 0) {
         paddlex -= 8;
@@ -137,6 +175,13 @@ function draw() {
     }
     x += dx;
     y += dy;
+    requestAnimationFrame(draw);
 }
 
-setInterval(draw, 10);
+function gameover(){
+    document.getElementById("arkanoidCanvaGo").style.display = "block";
+}
+
+draw()
+
+// setInterval(draw, 10);
