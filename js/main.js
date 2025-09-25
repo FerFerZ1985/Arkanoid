@@ -15,6 +15,22 @@ var paddleH = 12;
 var rightMove = false;
 var leftMove = false;
 
+var brickRows = 3;
+var brickColums = 5;
+var brickWidth = 60;
+var brickHeight = 20;
+var brickPadding = 12;
+var brickOfSetTop = 30;
+var brickOfSetLeft = 100;
+
+var briks = [];
+for (let i = 0; i < brickColums; i++) {
+    briks[i] = [];
+    for (let j = 0; j < brickRows; j++) {
+        briks[i][j] = { x: 0, y: 0, drawBrik: true };
+    }
+}
+
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
@@ -53,10 +69,47 @@ function drawPaddle() {
     ctx.fill();
     ctx.closePath();
 }
+
+function drawBriks() {
+    for (let i = 0; i < brickColums; i++) {
+        for (let j = 0; j < brickRows; j++) {
+            if (briks[i][j].drawBrik) {
+                var bx = (i * (brickWidth + brickPadding)) + brickOfSetLeft;
+                var by = (j * (brickHeight + brickPadding)) + brickOfSetTop;
+                briks[i][j].x = bx;
+                briks[i][j].y = by;
+                ctx.beginPath()
+                ctx.rect(bx, by, brickWidth, brickHeight);
+                ctx.fillStyle = "#ff3300";
+                ctx.fill();
+                ctx.closePath();
+            }
+        };
+    }
+}
+
+function detectHits() {
+    for (let i = 0; i < brickColums; i++) {
+        for (let j = 0; j < brickRows; j++) {
+            var brick = briks[i][j];
+            if (brick.drawBrik) {
+                if (x + radius > brick.x &&
+                    x - radius < brick.x + brickWidth &&
+                    y + radius > brick.y &&
+                    y - radius < brick.y + brickHeight) {
+                    dy = -dy;
+                    brick.drawBrik = false;
+                }
+            }
+        }
+    }
+}
 function draw() {
     ctx.clearRect(0, 0, c.width, c.height);
     drawPaddle();
     drawBall();
+    detectHits()
+    drawBriks();
     if (x + dx > c.width || x + dx < radius) {
         dx = -dx;
     }
@@ -65,11 +118,14 @@ function draw() {
         dy = -dy;
     } else {
         if (y + dy > c.height - radius) {
-            alert("GAME OVER");
+            if (x > paddlex && x < paddlex + paddleW) {
+                dy = -dy;
+            } else {
+                alert("GAME OVER");
+            }
         }
     }
 
-    
 
 
 
